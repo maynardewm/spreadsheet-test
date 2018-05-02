@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<head>
+	<style>
+		/* http://meyerweb.com/eric/tools/css/reset/ 
+		   v2.0 | 20110126
+		   License: none (public domain)
+		*/
+
+		html, body, div, span, applet, object, iframe,
+		h1, h2, h3, h4, h5, h6, p, blockquote, pre,
+		a, abbr, acronym, address, big, cite, code,
+		del, dfn, em, img, ins, kbd, q, s, samp,
+		small, strike, strong, sub, sup, tt, var,
+		b, u, i, center,
+		dl, dt, dd, ol, ul, li,
+		fieldset, form, label, legend,
+		table, caption, tbody, tfoot, thead, tr, th, td,
+		article, aside, canvas, details, embed, 
+		figure, figcaption, footer, header, hgroup, 
+		menu, nav, output, ruby, section, summary,
+		time, mark, audio, video {
+			margin: 0;
+			padding: 0;
+			border: 0;
+			font-size: 100%;
+			font: inherit;
+			vertical-align: baseline;
+		}
+		/* HTML5 display-role reset for older browsers */
+		article, aside, details, figcaption, figure, 
+		footer, header, hgroup, menu, nav, section {
+			display: block;
+		}
+		body {
+			line-height: 1;
+		}
+		ol, ul {
+			list-style: none;
+		}
+		blockquote, q {
+			quotes: none;
+		}
+		blockquote:before, blockquote:after,
+		q:before, q:after {
+			content: '';
+			content: none;
+		}
+		table {
+			border-collapse: collapse;
+			border-spacing: 0;
+		}
+		/* -------------- HEADER -------------- */
+		/* ----------------------------------- */
+		#header {
+			width: 100%;
+		}
+			#header #search {
+				width: 69%;
+				padding: 15px;
+				box-sizing: border-box;
+				display: inline-block;
+			}
+			#header button {
+				display: inline-block;
+				width: 15%;
+				padding: 15px;
+				background-color: blue;
+				color: #FFF;
+				cursor: pointer;
+				border: none;
+				margin: 0;
+			}
+			#header #load {
+				background-color: red;
+			}
+		/* -------------- SPREADSHEET -------------- */
+		/* ---------------------------------------- */
+		#spreadsheet {
+			overflow: auto;
+			position: relative;
+			border: solid 1px #000;
+		}
+		#spreadsheet tr:first-child td, #spreadsheet td:first-child {
+			background-color: #DDD;
+			text-align: center;
+			padding: 3px;
+		}
+			#spreadsheet td:first-child {
+				padding: 3px 20px;
+			}
+		#spreadsheet td {
+			border-left: solid 1px #999;
+			border-bottom: solid 1px #999;
+		}
+		#spreadsheet input {
+			border: none;
+			padding: 3px;
+		}
+
+	</style>
+</head>
+<body>
+	<div id="header">
+		<input type="text" id="search" placeholder="Find Spreadsheet" />
+		<button id="load">Load</button>
+		<button id="save">Save</button>
+	</div><!--header-->
+	<table id="spreadsheet"></table>
+</body>
+<script>
+	let columns = Array.from({ length: 27 }, (_, i) => String.fromCharCode('A'.charCodeAt(0) + i - 1));
+	let rows = Array.from(Array(500).keys());
+
+	for(var i=0; i<rows.length;i++) {
+		var row = document.getElementById("spreadsheet").insertRow(-1);
+		for (var j=0; j<columns.length; j++) {
+			let letter = columns[j];
+	        row.insertCell(-1).innerHTML = i&&j ? "<input id='"+ letter+i +"'/>" : i||letter;
+	    }
+	}
+
+</script>
+</html>
