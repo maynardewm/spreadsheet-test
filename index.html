@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <head>
+	<script src="https://code.jquery.com/jquery-3.3.1.js" integrity="sha256-2Kok7MbOyxpgUVvAk/HJ2jigOSYS2auK4Pfzbm7uH60=" crossorigin="anonymous"></script>
 	<style>
 		/* http://meyerweb.com/eric/tools/css/reset/ 
 		   v2.0 | 20110126
@@ -55,7 +56,7 @@
 			width: 100%;
 		}
 			#header #search {
-				width: 69%;
+				width: 68%;
 				padding: 15px;
 				box-sizing: border-box;
 				display: inline-block;
@@ -73,6 +74,21 @@
 			#header #load {
 				background-color: red;
 			}
+		/* -------------- KITCHEN SINK -------------- */
+		/* ----------------------------------------- */
+		#kitchen-sink {
+			width: 100%;
+			padding: 5px;
+			box-sizing: border-box;
+		}
+			#kitchen-sink div {
+				padding: 5px;
+				background-color: #DDD;
+				cursor: pointer;
+				display: inline-block;
+				font-size: 12px;
+			}
+
 		/* -------------- SPREADSHEET -------------- */
 		/* ---------------------------------------- */
 		#spreadsheet {
@@ -95,7 +111,28 @@
 		#spreadsheet input {
 			border: none;
 			padding: 3px;
+			outline: none;
 		}
+			#spreadsheet input.bold {
+				font-weight: bold;
+			}
+			#spreadsheet input.italic {
+				font-style: italic;
+			}
+			#spreadsheet input.align-left {
+				text-align: left;
+			}
+			#spreadsheet input.align-center {
+				text-align: center;
+			}
+			#spreadsheet input.align-right {
+				text-align: right;
+			}
+			#spreadsheet input.focus {
+				border: solid 1px blue;
+				box-sizing: border-box;
+				padding: 2px;
+			}
 
 	</style>
 </head>
@@ -105,10 +142,18 @@
 		<button id="load">Load</button>
 		<button id="save">Save</button>
 	</div><!--header-->
+	<div id="kitchen-sink">
+		<div id="bold">Bold</div>
+		<div id="italic">Italic</div>
+		<div id="align-left">Align Left</div>
+		<div id="align-center">Align Center</div>
+		<div id="align-right">Align Right</div>
+	</div>
 	<table id="spreadsheet"></table>
 </body>
 <script>
 	var sheets = [];
+	var activeSheet;
 	// 26 columns, 400 rows seemed reasonable to me
 	var columns = Array.from({ length: 27 }, (_, i) => String.fromCharCode('A'.charCodeAt(0) + i - 1));
 	var rows = Array.from(Array(301).keys());
@@ -119,13 +164,13 @@
 	{
 		"title": "Test",
 		"cells": [
-			{"pos": "A1", "value": "Hello"}
+			{"pos": "A1", "value": "Hello", "styles": ["bold", "align-center"]}
 		]
 	},
 	{
 		"title": "Another",
 		"cells": [
-			{"pos": "A2", "value": "Another"}
+			{"pos": "A2", "value": "Another", "styles": ["bold"]}
 		]
 	}
 	);
@@ -144,7 +189,7 @@
 	/* ---------- LOAD SHEET ---------- */
 	function loadSheet(sheet) {
 		// Clear old stuff
-		let inputs = spreadsheet.getElementsByTagName("input")
+		let inputs = $("#spreadsheet input");
 		let length = inputs.length;
 		while (length--) {
 		    inputs[length].value = '';
@@ -155,35 +200,61 @@
 		// Loop through cells in sheet, set input values on spreadsheet
 		for(let i=0; i<sheet.cells.length;i++) {
 			let cell = sheet.cells[i];
-			document.getElementById(cell.pos).value = cell.value;
+			let el = document.getElementById(cell.pos)
+			el.value = cell.value;
+			applyStyles(cell, el)
+		}
+
+		applyStyles(sheet);
+		activeSheet = sheet;
+	}
+	function applyStyles(cell, el) {
+		if (cell.styles) {
+			for(let j=0; j<cell.styles.length;j++) {
+				switch(cell.styles[j]){
+		            case "bold": el.classList.add('bold'); break;
+		            case "italic": el.classList.add('italic'); break;
+		            case "align-left": el.classList.add('align-left'); break;
+		            case "align-center": el.classList.add('align-center'); break;
+		            case "align-right": el.classList.add('align-right'); break;
+		            default: "Do nothing";
+		        }
+			}
 		}
 	}
 
 	/* ---------- SAVE SHEET ---------- */
 	function saveSheet(title) {
+		let sheet = {};
+		let isNewSheet = true;
+
 		// Check if spreadsheet already exists
 		let length = sheets.length;
 		while (length--) {
-		    if(sheets[length].title = title) {
+		    if(sheets[length].title === title) {
 				if (!confirm("This spreadsheet already exists, are you sure you would like to overwrite?")) {
 				  	return false;
+				} else {
+					isNewSheet = false;
+					sheet = sheets[length];
 				}
 			}
 		}
 
-		let sheet = {};
 		sheet.title = title;
 		sheet.cells = [];
-		let allCells = spreadsheet.getElementsByTagName("input");
+		let allCells = $("#spreadsheet input");
 		for(let i=0;i<allCells.length;i++) {
 			let theCell = allCells[i];
 			if(theCell.value != "") {
-				sheet.cells.push({"pos": theCell.id, "value": theCell.value});
+				sheet.cells.push({"pos": theCell.id, "value": theCell.value, "styles": Array.from(theCell.classList)});
 			}
 		}
 		if(sheet.cells.length != 0) {
-			console.log("Spreadsheet saved");
-			sheets.push(sheet);
+			if(isNewSheet === true) {
+				sheets.push(sheet);
+			}
+			alert("Spreadsheet saved.");
 		} else {
 			alert("Your spreadsheet is empty. Please insert values into at least one cell.")
 		}
@@ -221,6 +292,7 @@
 	});
 
 	/* --------- ARROW KEY PRESSES ---------- */
+	/* ------------------------------------- */
 	document.onkeydown = checkKey;
 	function checkKey(e) {
 	    e = e || window.event;
@@ -254,7 +326,7 @@
 		}
 	}
 
-	/* ---------- SUPPLEMENTAL FUNCTIONS ---------- */
+	/* ----- SUPPLEMENTAL FUNCTIONS FOR KEY PRESSES ----- */
 	function nextLetter(s){
 	    return s.replace(/([a-zA-Z])[^a-zA-Z]*$/, function(a){
 	        var c = a.charCodeAt(0);
@@ -285,6 +357,37 @@
 			return n;
 		}
 	}
+
+	/* -------------------- STYLING -------------------- */
+	$(document).on("focus", "#spreadsheet input", function() {
+		// Clear all other focuses
+		$("#spreadsheet input.focus").removeClass("focus");
+		$(this).addClass("focus");
+	});
+			
+	document.getElementById("bold").addEventListener("click", function(event) {
+		let el = $("#spreadsheet input.focus");
+	    el.addClass("bold");
+	});
+	document.getElementById("italic").addEventListener("click", function(event) {
+		let el = $("#spreadsheet input.focus");
+	    el.addClass("italic");
+	});
+	document.getElementById("align-left").addEventListener("click", function(event) {
+		let el = $("#spreadsheet input.focus");
+		el.removeClass("align-left align-right align-center");
+	    el.addClass("align-left");
+	});
+	document.getElementById("align-center").addEventListener("click", function(event) {
+		let el = $("#spreadsheet input.focus");
+		el.removeClass("align-left align-right align-center");
+	    el.addClass("align-center");
+	});
+	document.getElementById("align-right").addEventListener("click", function(event) {
+		let el = $("#spreadsheet input.focus");
+		el.removeClass("align-left align-right align-center");
+	    el.addClass("align-right");
+	});
 
 	loadSheet(sheets[0]);
 
